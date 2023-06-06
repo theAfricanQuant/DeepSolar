@@ -41,13 +41,11 @@ def generate_eval_set():
     try:
         with open('test_set_list', 'r') as f:
             eval_set_list = pickle.load(f)
-        print('Eval set size: ' + str(len(eval_set_list)))
+        print(f'Eval set size: {len(eval_set_list)}')
     except:
         raise EnvironmentError('Data list not existed. Please run generate_data_list.py first.')
 
-    eval_set_queue = deque(eval_set_list)
-
-    return eval_set_queue
+    return deque(eval_set_list)
 
 def test():
     # load eval set queue.
@@ -74,20 +72,13 @@ def test():
             else:
                 print('No checkpoint file found')
 
-            result_list = []
-            stats = {}
-            stats['r'] = [0, 0, 0]  # [TP, FP, FN] for residential.
-            stats['d'] = [0, 0, 0]  # [TP, FP, FN] for downtown/commercial.
-
-            # initialize the result
-            for ind in xrange(1, 66):
-                result_list.append([ind, 0, 0, 0, 0]) #[region_index, TP, TN, FP, FN]
-
+            stats = {'r': [0, 0, 0], 'd': [0, 0, 0]}
+            result_list = [[ind, 0, 0, 0, 0] for ind in xrange(1, 66)]
             for step in xrange(1, 936):
                 start_time = time.time()
                 # load data
                 minibatch = []
-                for count in xrange(0, BATCH_SIZE):
+                for _ in xrange(0, BATCH_SIZE):
                     element = eval_set_queue.pop()
                     minibatch.append(element)
 
@@ -109,20 +100,22 @@ def test():
                         result_list[index_list[i]-1][1] += 1
                         stats[type_list[i]][0] += 1
 
-                    elif label_list[i][0] == 1 and pos_score[i] < THRESHOLD: # FN
+                    elif label_list[i][0] == 1: # FN
                         result_list[index_list[i]-1][4] += 1
                         stats[type_list[i]][2] += 1
 
                     elif label_list[i][0] == 0 and pos_score[i] < THRESHOLD: # TN
                         result_list[index_list[i]-1][2] += 1
 
-                    elif label_list[i][0] == 0 and pos_score[i] >= THRESHOLD: # FP
+                    elif label_list[i][0] == 0: # FP
                         result_list[index_list[i]-1][3] += 1
                         stats[type_list[i]][1] += 1
 
                 duration = time.time() - start_time
 
-                print("Batch " + str(step) + ", Duration: " + str(duration)+ "s, # images left: " + str(len(eval_set_queue)))
+                print(
+                    f"Batch {str(step)}, Duration: {str(duration)}s, # images left: {len(eval_set_queue)}"
+                )
 
             # write csv
             with open(os.path.join("eval_result.csv"), 'wb') as f:
@@ -139,8 +132,8 @@ def test():
             recall_d = float(stats['d'][0]) / float(stats['d'][0] + stats['d'][2] + + 0.00000001)
 
             print ('############ RESULTS ############')
-            print ('Residential: precision: ' + str(precision_r) + ' recall: '+str(recall_r))
-            print ('Commercial: precision: ' + str(precision_d) + ' recall: ' + str(recall_d))
+            print(f'Residential: precision: {str(precision_r)} recall: {str(recall_r)}')
+            print(f'Commercial: precision: {str(precision_d)} recall: {str(recall_d)}')
             print ('See region level analysis in eval_result.csv')
 
 if __name__ == '__main__':

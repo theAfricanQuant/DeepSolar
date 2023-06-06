@@ -152,7 +152,7 @@ def _two_element_tuple(int_or_tuple):
   """
   if isinstance(int_or_tuple, (list, tuple)):
     if len(int_or_tuple) != 2:
-      raise ValueError('Must be a list with 2 elements: %s' % int_or_tuple)
+      raise ValueError(f'Must be a list with 2 elements: {int_or_tuple}')
     return int(int_or_tuple[0]), int(int_or_tuple[1])
   if isinstance(int_or_tuple, int):
     return int(int_or_tuple), int(int_or_tuple)

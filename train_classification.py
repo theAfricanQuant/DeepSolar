@@ -69,8 +69,7 @@ def load_image(path):
     if resized_img.shape[2] != 3:
         resized_img = resized_img[:, :, 0:3]
     rotate_angle = random.choice(rotate_angle_list)
-    image = skimage.transform.rotate(resized_img, rotate_angle)
-    return image
+    return skimage.transform.rotate(resized_img, rotate_angle)
 
 def train():
     # load train set list and transform it to queue.
@@ -83,7 +82,7 @@ def train():
     train_set_queue = deque(train_set_list)
     train_set_size = len(train_set_list)
     del train_set_list
-    print ('Training set built. Size: '+str(train_set_size))
+    print(f'Training set built. Size: {train_set_size}')
 
     # build the tensorflow graph.
     with tf.Graph().as_default() as g:
@@ -133,7 +132,7 @@ def train():
         for l in losses + [total_loss]:
             # Name each loss as '(raw)' and name the moving average version of the loss
             # as the original loss name.
-            tf.summary.scalar(l.op.name + ' (raw)', l)
+            tf.summary.scalar(f'{l.op.name} (raw)', l)
             tf.summary.scalar(l.op.name, loss_averages.average(l))
 
         with tf.control_dependencies([loss_averages_op]):
@@ -156,7 +155,7 @@ def train():
         # Add histograms for gradients.
         for grad, var in grads:
             if grad is not None:
-                tf.summary.histogram(var.op.name + '/gradients', grad)
+                tf.summary.histogram(f'{var.op.name}/gradients', grad)
 
         # Track the moving averages of all trainable variables.
         variable_averages = tf.train.ExponentialMovingAverage(
@@ -198,8 +197,9 @@ def train():
                 slim.variables.VARIABLES_TO_RESTORE)
             restorer = tf.train.Saver(variables_to_restore)
             restorer.restore(sess, FLAGS.pretrained_model_checkpoint_path)
-            print('%s: Pre-trained model restored from %s' %
-                  (datetime.now(), FLAGS.pretrained_model_checkpoint_path))
+            print(
+                f'{datetime.now()}: Pre-trained model restored from {FLAGS.pretrained_model_checkpoint_path}'
+            )
 
         summary_writer = tf.summary.FileWriter(
             FLAGS.ckpt_save_dir,
@@ -210,7 +210,7 @@ def train():
             start_time = time.time()
             # construct image batch and label batch for one step train
             minibatch = []
-            for count in xrange(0, BATCH_SIZE):
+            for _ in xrange(0, BATCH_SIZE):
                 element = train_set_queue.pop()
                 minibatch.append(element)
                 train_set_queue.appendleft(element)

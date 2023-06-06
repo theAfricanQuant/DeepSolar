@@ -57,13 +57,11 @@ def generate_eval_set():
     try:
         with open('test_set_list', 'r') as f:
             eval_set_list = pickle.load(f)
-        print('Eval set size: ' + str(len(eval_set_list)))
+        print(f'Eval set size: {len(eval_set_list)}')
     except:
         raise EnvironmentError('Data list not existed. Please run generate_data_list.py first.')
 
-    eval_set_queue = deque(eval_set_list)
-
-    return eval_set_queue
+    return deque(eval_set_list)
 
 def test():
     eval_set_queue = generate_eval_set()

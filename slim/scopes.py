@@ -61,13 +61,11 @@ _DECORATED_OPS = set()
 
 
 def _get_arg_stack():
-  stack = ops.get_collection(_ARGSTACK_KEY)
-  if stack:
+  if stack := ops.get_collection(_ARGSTACK_KEY):
     return stack[0]
-  else:
-    stack = [{}]
-    ops.add_to_collection(_ARGSTACK_KEY, stack)
-    return stack
+  stack = [{}]
+  ops.add_to_collection(_ARGSTACK_KEY, stack)
+  return stack
 
 
 def _current_arg_scope():

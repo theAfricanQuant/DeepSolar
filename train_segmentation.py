@@ -58,8 +58,7 @@ def load_image(path):
     if resized_img.shape[2] != 3:
         resized_img = resized_img[:, :, 0:3]
     rotate_angle = random.choice(rotate_angle_list)
-    image = skimage.transform.rotate(resized_img, rotate_angle)
-    return image
+    return skimage.transform.rotate(resized_img, rotate_angle)
 
 def train():
     # load train set list and transform it to queue. For time concern, we recommmend use a subset of training set
@@ -73,7 +72,7 @@ def train():
     train_set_queue = deque(train_set_list)
     train_set_size = len(train_set_list)
     del train_set_list
-    print ('Training set built. Size: '+str(train_set_size))
+    print(f'Training set built. Size: {train_set_size}')
 
     # build the tensorflow graph
     with tf.Graph().as_default() as g:
@@ -153,7 +152,7 @@ def train():
             start_time = time.time()
             # construct image batch and label batch for one step train.
             minibatch = []
-            for count in xrange(0, BATCH_SIZE):
+            for _ in xrange(0, BATCH_SIZE):
                 element = train_set_queue.pop()
                 minibatch.append(element)
                 train_set_queue.appendleft(element)

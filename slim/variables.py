@@ -163,7 +163,7 @@ def get_unique_variable(name):
   """
   candidates = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, name)
   if not candidates:
-    raise ValueError('Couldnt find variable %s' % name)
+    raise ValueError(f'Couldnt find variable {name}')
 
   for candidate in candidates:
     if candidate.op.name == name:
@@ -201,7 +201,7 @@ class VariableDeviceChooser(object):
       task_id = self._next_task_id
       self._next_task_id = (self._next_task_id + 1) % self._num_ps
       device_string = '%s/task:%d' % (self._ps_device, task_id)
-    device_string += '/%s' % self._placement
+    device_string += f'/{self._placement}'
     return device_string
 
 
@@ -209,7 +209,7 @@ class VariableDeviceChooser(object):
 def variable_device(device, name):
   """Fix the variable device to colocate its ops."""
   if callable(device):
-    var_name = tf.get_variable_scope().name + '/' + name
+    var_name = f'{tf.get_variable_scope().name}/{name}'
     var_def = tf.NodeDef(name=var_name, op='Variable')
     device = device(var_def)
   if device is None:
@@ -228,20 +228,18 @@ def global_step(device=''):
   Returns:
     the tensor representing the global step variable.
   """
-  global_step_ref = tf.get_collection(tf.GraphKeys.GLOBAL_STEP)
-  if global_step_ref:
+  if global_step_ref := tf.get_collection(tf.GraphKeys.GLOBAL_STEP):
     return global_step_ref[0]
-  else:
-    collections = [
-        VARIABLES_TO_RESTORE,
-        tf.GraphKeys.GLOBAL_VARIABLES,
-        tf.GraphKeys.GLOBAL_STEP,
-    ]
-    # Get the device for the variable.
-    with tf.device(variable_device(device, 'global_step')):
-      return tf.get_variable('global_step', shape=[], dtype=tf.int64,
-                             initializer=tf.zeros_initializer,
-                             trainable=False, collections=collections)
+  collections = [
+      VARIABLES_TO_RESTORE,
+      tf.GraphKeys.GLOBAL_VARIABLES,
+      tf.GraphKeys.GLOBAL_STEP,
+  ]
+  # Get the device for the variable.
+  with tf.device(variable_device(device, 'global_step')):
+    return tf.get_variable('global_step', shape=[], dtype=tf.int64,
+                           initializer=tf.zeros_initializer,
+                           trainable=False, collections=collections)
 
 
 @scopes.add_arg_scope
